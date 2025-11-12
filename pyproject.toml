@@ -5,13 +5,17 @@ description = "Warmup exercises for ddi13"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "finnhub-python>=2.4.25",
+    "matplotlib>=3.10.7",
     "networkx>=3.5",
     "numpy>=2.3.3",
     "openpyxl>=3.1.5",
     "pandas>=2.3.1",
     "polars>=1.31.0",
     "scikit-learn>=1.7.2",
+    "sqlalchemy>=2.0.44",
     "streamlit>=1.50.0",
+    "yfinance>=0.2.66",
 ]
 
 [tool.ruff]
