@@ -1,18 +1,18 @@
+import altair as alt
 import numpy as np
 import polars as pl
-import altair as alt
 
 rand = np.random.randint(1, 7, size=1000)
-df = pl.DataFrame({"rolls": rand})
-alt.theme.enable("dark")
-alt.renderers.enable("browser")
+df = pl.DataFrame({'rolls': rand})
+alt.theme.enable('dark')
+alt.renderers.enable('browser')
 
 chart = (
     alt.Chart(df)
-    .mark_bar(color="purple")
+    .mark_bar(color='purple')
     .encode(
-        alt.X("rolls:O", bin=True),
-        y="count()",
+        alt.X('rolls:O', bin=True),
+        y='count()',
     )
     .properties(height=400, width=400)
 )
@@ -28,83 +28,94 @@ p_value = np.mean(simulated_yes >= real_yes)
 # print("P-value:", p_value)
 
 np.random.binomial(n=10, p=0.5)
-import finnhub
-import time
 import sys
+import time
 
-finnhub_client = finnhub.Client(api_key="d4744cpr01qh8nnb1ragd4744cpr01qh8nnb1rb0")
+import finnhub
+
+finnhub_client = finnhub.Client(
+    api_key='d4744cpr01qh8nnb1ragd4744cpr01qh8nnb1rb0'
+)
 # print(finnhub_client.quote("AAPL"))
-news = pl.DataFrame(finnhub_client.general_news("general", min_id=0))
+news = pl.DataFrame(finnhub_client.general_news('general', min_id=0))
 news.head()
 
 for row in news.iter_rows(named=True):
     print(
-        f"""{row["source"]} -
+        f"""{row['source']} -
 
-    {row["headline"]}
+    {row['headline']}
 
-    {row["summary"]}\n"""
+    {row['summary']}\n"""
     )
     time.sleep(5)
 
 
+import altair as alt
 import pandas as pd
 import yfinance as yf
 
-df = yf.download("NVDA", period="3mo", interval="1d", group_by="ticker")
 
-df.columns = [
-    "_".join(col).strip() if isinstance(col, tuple) else col
-    for col in df.columns.values
-]
+def render_candlestick(stock):
+    df = yf.download(stock, period='3mo', interval='1d', group_by='ticker')
+    df.columns = [
+        '_'.join(col).strip() if isinstance(col, tuple) else col
+        for col in df.columns.values
+    ]
 
-df = df.reset_index()
+    df = df.reset_index()
 
-df = df.rename(
-    columns={
-        "Date": "Date",
-        "NVDA_Close": "Close",
-        "NVDA_High": "High",
-        "NVDA_Low": "Low",
-        "NVDA_Open": "Open",
-        "NVDA_Volume": "Volume",
-    }
-)
-
-print(df.columns)
-import altair as alt
-
-alt.theme.enable("dark")
-alt.renderers.enable("browser")
-chart = (
-    alt.Chart(df)
-    .mark_rule()
-    .encode(
-        x="Date:T",
-        y="Low:Q",
-        y2="High:Q",
-        color=alt.condition(
-            "datum.Open < datum.Close", alt.value("green"), alt.value("red")
-        ),
+    df = df.rename(
+        columns={
+            'Date': 'Date',
+            f'{stock}_Close': 'Close',
+            f'{stock}_High': 'High',
+            f'{stock}_Low': 'Low',
+            f'{stock}_Open': 'Open',
+            f'{stock}_Volume': 'Volume',
+        }
     )
-    + alt.Chart(df)
-    .mark_bar()
-    .encode(
-        x="Date:T",
-        y="Open:Q",
-        y2="Close:Q",
-        color=alt.condition(
-            "datum.Open < datum.Close", alt.value("green"), alt.value("red")
-        ),
+    alt.theme.enable('dark')
+    alt.renderers.enable('browser')
+    chart = (
+        alt.Chart(df)
+        .mark_rule()
+        .encode(
+            x='Date:T',
+            y='Low:Q',
+            y2='High:Q',
+            color=alt.condition(
+                'datum.Open < datum.Close',
+                alt.value('green'),
+                alt.value('red'),
+            ),
+        )
+        + alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x='Date:T',
+            y='Open:Q',
+            y2='Close:Q',
+            color=alt.condition(
+                'datum.Open < datum.Close',
+                alt.value('green'),
+                alt.value('red'),
+            ),
+        )
+    ).properties(
+        width=700, height=400, title=f'{stock} Daily Candlestick (3mo)'
     )
-).properties(width=700, height=400, title="NVIDIA Daily Candlestick (3mo)")
-ymin = df["Low"].min()
-ymax = df["High"].max()
+    ymin = df['Low'].min()
+    ymax = df['High'].max()
 
-buffer = (ymax - ymin) * 0.02
-chart = chart.encode(
-    y=alt.Y("Low:Q", scale=alt.Scale(domain=[ymin - buffer, ymax + buffer]))
-)
+    buffer = (ymax - ymin) * 0.02
+    chart = chart.encode(
+        y=alt.Y(
+            'Low:Q', scale=alt.Scale(domain=[ymin - buffer, ymax + buffer])
+        )
+    ).interactive()
+
+    chart.show()
 
 
-chart.show()
+render_candlestick('CRSP')
